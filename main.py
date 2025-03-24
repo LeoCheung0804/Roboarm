@@ -5,7 +5,7 @@ from mks_servo_can import MksServo
 # Constants
 TIMEOUT = 30  # Timeout for waiting for motor idle (seconds)
 SPEED = 500  # Speed in units specific to the library (adjust as needed)
-ACCEL = 1   # Acceleration in units specific to the library (adjust as needed)
+ACCEL = 1  # Acceleration in units specific to the library (adjust as needed)
 SUBDIVISIONS = 16  # Microstepping resolution
 
 # Initialize the CAN interface
@@ -17,11 +17,14 @@ servo1 = MksServo(bus, notifier, 1)
 servo2 = MksServo(bus, notifier, 2)
 servo3 = MksServo(bus, notifier, 3)
 
+
 def angle_to_ticks(angle_deg):
     return angle_deg * 5.56  # Adjust based on your motor
 
+
 def ticks_to_angle(ticks):
     return ticks / 5.56
+
 
 def wait_for_motor_idle(servo, timeout):
     """Wait for a single motor to become idle."""
@@ -35,6 +38,8 @@ def wait_for_motor_idle(servo, timeout):
         return False
     print("Idle")
     return True
+
+
 '''
 def wait_for_all_motors_idle(servos, timeout):
     """Wait for all motors to become idle."""
@@ -55,11 +60,13 @@ def wait_for_all_motors_idle(servos, timeout):
     print("\nTimeout waiting for all motors")
     return False
 '''
+
+
 def wait_for_all_motors_idle(servos, timeout):
     start_time = time.perf_counter()
     last_print_time = start_time
     print_interval = 0.5  # Print every 0.5 seconds
-    
+
     while time.perf_counter() - start_time < timeout:
         all_idle = True
         for servo in servos:
@@ -69,7 +76,7 @@ def wait_for_all_motors_idle(servos, timeout):
         if all_idle:
             print("All motors idle")
             return True
-        
+
         current_time = time.perf_counter()
         if current_time - last_print_time >= print_interval:
             print(f"\nTime: {current_time - start_time:.1f}s")
@@ -77,12 +84,15 @@ def wait_for_all_motors_idle(servos, timeout):
                 speed = servo.read_motor_speed()
                 position = servo.read_encoder_value_addition()
                 status = "Moving" if servo.is_motor_running() else "Idle"
-                print(f"Motor {servo.can_id}: Speed={speed}, Position={position}, Status={status}")
+                print(
+                    f"Motor {servo.can_id}: Speed={speed}, Position={position}, Status={status}"
+                )
             last_print_time = current_time
         time.sleep(0.1)
-    
+
     print("Timeout waiting for all motors")
     return False
+
 
 def emergency_stop(servo):
     """Stop a motor immediately."""
@@ -92,14 +102,16 @@ def emergency_stop(servo):
     except Exception as e:
         print(f"Error during emergency stop: {e}")
 
+
 def configure_servo(servo):
     """Configure a servo motor."""
     print(f"Configuring servo {servo.can_id}")
     servo.set_work_mode(MksServo.WorkMode.SrvFoc)  # Field-Oriented Control mode
-    servo.set_subdivisions(SUBDIVISIONS)           # Set microstepping
-    servo.set_working_current(3000)                # Current in mA (assumed)
-    servo.set_current_axis_to_zero()               # Set current position as zero
-    #print(servo.read_encoder_value_addition())
+    servo.set_subdivisions(SUBDIVISIONS)  # Set microstepping
+    servo.set_working_current(3000)  # Current in mA (assumed)
+    servo.set_current_axis_to_zero()  # Set current position as zero
+    # print(servo.read_encoder_value_addition())
+
 
 def move_motors_to_positions(servos, positions):
     """Move all motors to their target positions simultaneously."""
@@ -107,14 +119,16 @@ def move_motors_to_positions(servos, positions):
         print(f"Moving motor {servo.can_id} to position {pos}", flush=True)
         servo.run_motor_absolute_motion_by_axis(SPEED, ACCEL, pos)
 
+
 def log_errors(servos, target_positions):
     for servo, target in zip(servos, target_positions):
-        actual = servo.read_encoder_value_addition()  
+        actual = servo.read_encoder_value_addition()
         error = target - actual
         print(f"Servo {servo.can_id}: Target={target}, Actual={actual}, Error={error}")
         # Log to file
         with open("errors.txt", "a") as f:
             f.write(f"{servo.can_id}, {target}, {actual}, {error}\n")
+
 
 def main():
     # List of all servos for convenience
@@ -123,7 +137,7 @@ def main():
     # Emergency stop all servos
     for servo in servos:
         emergency_stop(servo)
-    
+
     # Calibrate encoders (uncommented and added waiting)
     print("Calibrating encoders...")
     for servo in servos:
@@ -133,14 +147,14 @@ def main():
             emergency_stop(servo)
             return
     print("Calibration completed.")
-    
+
     # Configure all servos
     for servo in servos:
         configure_servo(servo)
 
     # Define target positions for two poses (example values)
     pose1 = [100000, 200000, 300000]  # Extended position
-    pose2 = [0, 0, 0]                  # Home position
+    pose2 = [0, 0, 0]  # Home position
 
     try:
         while True:
@@ -171,6 +185,7 @@ def main():
         notifier.stop()
         bus.shutdown()
         print("CAN bus shut down")
+
 
 if __name__ == "__main__":
     main()

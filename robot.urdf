@@ -1,0 +1,58 @@
+<robot name="robot">
+  <!-- Base link (fixed to the ground) -->
+  <link name="base">
+    <visual>
+      <geometry>
+        <box size="0.1 0.1 0.1"/>
+      </geometry>
+    </visual>
+  </link>
+  
+  <!-- Joint 1: Connects base to link1 -->
+  <joint name="joint1" type="revolute">
+    <parent link="base"/>
+    <child link="link1"/>
+    <origin xyz="0 0 0.05"/> <!-- Slight offset in Z for visualization -->
+    <axis xyz="0 0 1"/> <!-- Rotation around Z-axis for 2D motion -->
+    <limit lower="-3.14" upper="3.14" effort="10" velocity="10"/>
+  </joint>
+  
+  <!-- Link 1: First arm segment -->
+  <link name="link1">
+    <visual>
+      <geometry>
+        <box size="0.5 0.02 0.02"/> <!-- 0.5m long, thin in Y and Z -->
+      </geometry>
+      <origin xyz="0.25 0 0"/> <!-- Center of the link -->
+    </visual>
+    <inertial>
+      <origin xyz="0.25 0 0"/>
+      <mass value="0.5"/>
+      <inertia ixx="0.001" ixy="0" ixz="0" iyy="0.001" iyz="0" izz="0.001"/>
+    </inertial>
+  </link>
+  
+  <!-- Joint 2: Connects link1 to link2 -->
+  <joint name="joint2" type="revolute">
+    <parent link="link1"/>
+    <child link="link2"/>
+    <origin xyz="0.5 0 0"/> <!-- At the end of link1 -->
+    <axis xyz="0 0 1"/>
+    <limit lower="-3.14" upper="3.14" effort="10" velocity="10"/>
+  </joint>
+  
+  <!-- Link 2: Second arm segment (end-effector at its tip) -->
+  <link name="link2">
+    <visual>
+      <geometry>
+        <box size="0.5 0.02 0.02"/>
+      </geometry>
+      <origin xyz="0.25 0 0"/>
+    </visual>
+    <inertial>
+      <origin xyz="0.25 0 0"/>
+      <mass value="0.5"/>
+      <inertia ixx="0.001" ixy="0" ixz="0" iyy="0.001" iyz="0" izz="0.001"/>
+    </inertial>
+  </link>
+</robot>
